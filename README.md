@@ -8,7 +8,7 @@ This repository provides an example of how to streamline data engineering workfl
 
 ## Features
 
-- **Parameter Passing in Notebooks**: Demonstrates how to pass parameters to Snowflake notebooks by name for easy reference and reduced positional errors.
+- **Parameter Passing in Notebooks**: Demonstrates how to pass parameters to Snowflake notebooks by positition.
 - **Centralized Notebook Execution**: Shows how to use one or a few parameterized notebooks to run different data flows, eliminating the need to create a task per notebook.
 - **Multiple Task Configurations**: Defines two tasks with different parameter configurations, each executing the same notebook, to illustrate flexible data engineering setups.
 
@@ -16,7 +16,7 @@ This repository provides an example of how to streamline data engineering workfl
 
 ```plaintext
 ├── notebooks/
-│   └── notebook_with_named_parameters  # Example Snowflake notebook using named parameters
+│   └── notebook_with_parameters  # Example Snowflake notebook using named parameters
 ├── tasks/
 │   ├── task1_definition.sql        # Defines Task 1 with specific parameters
 │   └── task2_definition.sql        # Defines Task 2 with different parameters
@@ -33,33 +33,32 @@ This repository provides an example of how to streamline data engineering workfl
 
 1. **Clone the repository** and navigate to the project directory.
 2. **Review the parameterized notebook** in `notebooks/parameterized_notebook.sql` to understand how parameters are referenced and used.
-3. **Create notebook** in Snowflake with the name `notebook_with_named_parameters` and import the content from the `notebooks/notebook_with_named_parameters/notebook_app.ipynb` file.
+3. **Create notebook** in Snowflake with the name `notebook_with_parameters` and import the content from the `notebooks/notebook_with_parameters/notebook_app.ipynb` file.
 
 
 ### Example Parameter Configuration
 
-The notebook accepts the following named parameters:
+The notebook accepts the following parameters (which are used in ordinal position):
 - `name`
 - `lastname`
 
-The notebook leverages the `sfutils` utility.
-`sfutils.args` can be used to get all notebook arguments
-`sfutils.args.get('name')` can be used to get a specific argument
+The notebook leverages the `sys.argv` to read arguments.
 
 In this case we just insert the name and lastname into a table
 
 You can test this notebook by running the following commands in Snowflake:
 
 ```sql
-EXECUTE NOTEBOOK NOTEBOOK_WITH_NAMED_PARAMETERS('name=Mickey lastname=Mouse'); 
+EXECUTE NOTEBOOK NOTEBOOK_WITH_PARAMETERS('Mickey Mouse'); 
 ```
 
 ### Centralized Control Flow.
 
-Based on the arguments you can control the flow of the notebook. In this notebook we did just a very basic branching based on the `name` parameter.
+Based on the arguments you can control the flow of the notebook. In this notebook we did just a very basic branching based on the `args[0]` parameter.
 
 ```python
-if sfutils.widgets.get("name") == "John":
+args = sys.argv
+if args[0] == "John":
     session.sql("""
     INSERT INTO NOTEBOOK_ARGUMENTS_SAMPLE VALUES ('{}','The notebook was called with John','Done')
     """).show()
